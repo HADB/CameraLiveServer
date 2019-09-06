@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Text;
 
@@ -16,8 +14,8 @@ namespace CameraLiveServer
 
         public MjpegWriter(Stream stream, string boundary)
         {
-            this.Stream = stream;
-            this.Boundary = boundary;
+            Stream = stream;
+            Boundary = boundary;
         }
 
         public string Boundary { get; private set; }
@@ -28,14 +26,14 @@ namespace CameraLiveServer
         {
             Write("HTTP/1.1 200 OK\r\n" +
                   "Content-Type: multipart/x-mixed-replace; boundary=" +
-                  this.Boundary +
+                  Boundary +
                   "\r\n");
-            this.Stream.Flush();
+            Stream.Flush();
         }
 
         public void Write(MemoryStream imageStream)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             sb.AppendLine();
             sb.AppendLine(this.Boundary);
@@ -47,13 +45,13 @@ namespace CameraLiveServer
             imageStream.WriteTo(this.Stream);
             Write("\r\n");
 
-            this.Stream.Flush();
+            Stream.Flush();
         }
 
         private void Write(string text)
         {
-            byte[] data = BytesOf(text);
-            this.Stream.Write(data, 0, data.Length);
+            var data = BytesOf(text);
+            Stream.Write(data, 0, data.Length);
         }
 
         private static byte[] BytesOf(string text)
@@ -67,14 +65,14 @@ namespace CameraLiveServer
         {
             try
             {
-                if (this.Stream != null)
+                if (Stream != null)
                 {
-                    this.Stream.Dispose();
+                    Stream.Dispose();
                 }
             }
             finally
             {
-                this.Stream = null;
+                Stream = null;
             }
         }
 

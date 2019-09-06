@@ -24,6 +24,7 @@ namespace CameraLiveServer
         private int _Type = 0;
         private int _Width = 1920;
         private int _Height = 1080;
+        private bool hasNewFrame = false;
 
         public ImageStreamingServer(int type, int width, int height)
         {
@@ -57,6 +58,7 @@ namespace CameraLiveServer
             {
                 e.Frame.Save(ms, ImageFormat.Jpeg);
                 buffer = ms.ToArray();
+                hasNewFrame = true;
             }
         }
 
@@ -148,12 +150,15 @@ namespace CameraLiveServer
 
                     if (_Type == 0)
                     {
-
                         while (true)
                         {
-                            using (var ms = new MemoryStream(buffer))
+                            if (hasNewFrame)
                             {
-                                mjpegWriter.Write(ms);
+                                using (var ms = new MemoryStream(buffer))
+                                {
+                                    mjpegWriter.Write(ms);
+                                    hasNewFrame = false;
+                                }
                             }
                         }
                     }
