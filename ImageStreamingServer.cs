@@ -160,6 +160,8 @@ namespace CameraLiveServer
                                     hasNewFrame = false;
                                 }
                             }
+
+                            Thread.Sleep(10);
                         }
                     }
                     else
