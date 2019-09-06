@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29215.179
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CameraLiveServer", "CameraLiveServer.csproj", "{0471CF9F-1059-4A8C-A8ED-B844F8BE7615}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0471CF9F-1059-4A8C-A8ED-B844F8BE7615}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0471CF9F-1059-4A8C-A8ED-B844F8BE7615}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0471CF9F-1059-4A8C-A8ED-B844F8BE7615}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0471CF9F-1059-4A8C-A8ED-B844F8BE7615}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5ABDD7D7-753D-4344-896A-C701394DCD90}
+	EndGlobalSection
+EndGlobal
