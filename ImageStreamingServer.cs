@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Windows;
+using AForge.Imaging.Filters;
 using AForge.Video;
 using AForge.Video.DirectShow;
 using log4net;
@@ -56,6 +57,8 @@ namespace CameraLiveServer
         {
             using (var ms = new MemoryStream())
             {
+                var mirror = new Mirror(false, true);
+                mirror.ApplyInPlace(e.Frame);
                 e.Frame.Save(ms, ImageFormat.Jpeg);
                 buffer = ms.ToArray();
                 hasNewFrame = true;
@@ -113,7 +116,7 @@ namespace CameraLiveServer
                 Socket Server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
                 Server.Bind(new IPEndPoint(IPAddress.Any, (int)state));
-                Server.Listen(10);
+                Server.Listen(100);
 
                 Logger.Info(string.Format("Server started on port {0}.", state));
 
@@ -204,7 +207,7 @@ namespace CameraLiveServer
             }
             catch (Exception ex)
             {
-                Logger.Error(ex.Message, ex);
+                // Logger.Error(ex.Message, ex);
             }
             finally
             {
