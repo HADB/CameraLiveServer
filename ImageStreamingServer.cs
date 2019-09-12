@@ -22,41 +22,37 @@ namespace CameraLiveServer
 
         private byte[] buffer;
 
-        private int _Type = 0;
         private int _Width = 1920;
         private int _Height = 1080;
         private bool hasNewFrame = false;
         private DateTime lastFrameTime = DateTime.Now;
+        private DateTime lastFpsTime = DateTime.Now;
+        private int fps = 0;
 
-        public ImageStreamingServer(int type, int width, int height)
+        public ImageStreamingServer(int width, int height)
         {
             _Clients = new List<Socket>();
             _Thread = null;
-            _Type = type;
             _Width = width;
             _Height = height;
+            var videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
 
-            if (type == 0)
+            var source = new VideoCaptureDevice(videoDevices[0].MonikerString);
+            var videoCapabilities = source.VideoCapabilities;
+            foreach (VideoCapabilities vc in videoCapabilities)
             {
-                var videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
-
-                var source = new VideoCaptureDevice(videoDevices[0].MonikerString);
-                var videoCapabilities = source.VideoCapabilities;
-                foreach (VideoCapabilities vc in videoCapabilities)
+                if (vc.FrameSize.Width == width && vc.FrameSize.Height == height)
                 {
-                    if (vc.FrameSize.Width == width)
-                    {
-                        source.VideoResolution = vc;
-                    }
+                    source.VideoResolution = vc;
                 }
-                source.NewFrame += (object sender, NewFrameEventArgs e) => NewFrameEventHandler(e);
-                source.Start();
             }
+            source.NewFrame += (object sender, NewFrameEventArgs e) => NewFrameEventHandler(e);
+            source.Start();
         }
 
         private void NewFrameEventHandler(NewFrameEventArgs e)
         {
-            if (DateTime.Now - lastFrameTime > TimeSpan.FromMilliseconds(40))
+            if (DateTime.Now - lastFrameTime > TimeSpan.FromMilliseconds(25))
             {
                 using (var ms = new MemoryStream())
                 {
@@ -155,60 +151,30 @@ namespace CameraLiveServer
                 using (var mjpegWriter = new MjpegWriter(new NetworkStream(socket, true)))
                 {
                     mjpegWriter.WriteHeader();
-
-                    if (_Type == 0)
+                    while (true)
                     {
-                        while (true)
+                        if (hasNewFrame)
                         {
-                            if (hasNewFrame)
+                            using (var ms = new MemoryStream(buffer))
                             {
-                                using (var ms = new MemoryStream(buffer))
-                                {
-                                    mjpegWriter.Write(ms);
-                                    hasNewFrame = false;
-                                }
-                            }
-
-                            Thread.Sleep(10);
-                        }
-                    }
-                    else
-                    {
-                        var screenSize = new Size((int)SystemParameters.PrimaryScreenWidth, (int)SystemParameters.PrimaryScreenHeight);
-                        var srcImage = new Bitmap(screenSize.Width, screenSize.Height);
-                        var srcGraphics = Graphics.FromImage(srcImage);
-
-                        var dstImage = srcImage;
-                        var dstGraphics = srcGraphics;
-
-                        var needScale = _Width != screenSize.Width;
-
-                        if (needScale)
-                        {
-                            dstImage = new Bitmap(_Width, _Height);
-                            dstGraphics = Graphics.FromImage(dstImage);
-                        }
-
-                        var srcRect = new Rectangle(new Point(0, 0), screenSize);
-                        var dstRect = new Rectangle(new Point(0, 0), new Size(_Width, _Height));
-
-
-                        while (true)
-                        {
-                            using (var ms = new MemoryStream())
-                            {
-                                srcGraphics.CopyFromScreen(0, 0, 0, 0, screenSize);
-                                if (needScale)
-                                {
-                                    dstGraphics.DrawImage(srcImage, dstRect, srcRect, GraphicsUnit.Pixel);
-                                }
-                                ms.SetLength(0);
-                                dstImage.Save(ms, ImageFormat.Jpeg);
                                 mjpegWriter.Write(ms);
+                                hasNewFrame = false;
+                                if (DateTime.Now - lastFpsTime < TimeSpan.FromSeconds(1))
+                                {
+                                    fps += 1;
+                                }
+                                else
+                                {
+                                    lastFpsTime = DateTime.Now;
+                                    Logger.Info("FPS: " + fps);
+                                    fps = 0;
+                                }
                             }
-                            Thread.Sleep(10);
                         }
+
+                        Thread.Sleep(10);
                     }
+
                 }
             }
             catch (Exception ex)

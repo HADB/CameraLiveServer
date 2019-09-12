@@ -7,7 +7,7 @@ namespace CameraLiveServer
     {
         static void Main(string[] args)
         {
-            var server = new ImageStreamingServer(0, 1280, 720);
+            var server = new ImageStreamingServer(1280, 960);
             server.Start(8888);
             Console.ReadLine();
         }
