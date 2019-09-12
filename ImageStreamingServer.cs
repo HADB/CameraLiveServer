@@ -26,6 +26,7 @@ namespace CameraLiveServer
         private int _Width = 1920;
         private int _Height = 1080;
         private bool hasNewFrame = false;
+        private DateTime lastFrameTime = DateTime.Now;
 
         public ImageStreamingServer(int type, int width, int height)
         {
@@ -55,13 +56,17 @@ namespace CameraLiveServer
 
         private void NewFrameEventHandler(NewFrameEventArgs e)
         {
-            using (var ms = new MemoryStream())
+            if (DateTime.Now - lastFrameTime > TimeSpan.FromMilliseconds(40))
             {
-                var mirror = new Mirror(false, true);
-                mirror.ApplyInPlace(e.Frame);
-                e.Frame.Save(ms, ImageFormat.Jpeg);
-                buffer = ms.ToArray();
-                hasNewFrame = true;
+                using (var ms = new MemoryStream())
+                {
+                    var mirror = new Mirror(false, true);
+                    mirror.ApplyInPlace(e.Frame);
+                    e.Frame.Save(ms, ImageFormat.Jpeg);
+                    buffer = ms.ToArray();
+                    hasNewFrame = true;
+                    lastFrameTime = DateTime.Now;
+                }
             }
         }
 
@@ -201,6 +206,7 @@ namespace CameraLiveServer
                                 dstImage.Save(ms, ImageFormat.Jpeg);
                                 mjpegWriter.Write(ms);
                             }
+                            Thread.Sleep(10);
                         }
                     }
                 }
